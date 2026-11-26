@@ -1,5 +1,6 @@
 package com.example.journalAPP.Entity;
 
+import lombok.Data;
 import lombok.NonNull;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "users")
+@Data
 public class User {
     @Id
     private ObjectId id;
@@ -20,5 +22,5 @@ public class User {
     @NonNull
     private String password;
     @DBRef
-    private List<JournalEntry> journalEntryList=new ArrayList<>();
+    private List<JournalEntry> journalEntryList=new ArrayList<>(); // it will be like a foriegn key
 }
