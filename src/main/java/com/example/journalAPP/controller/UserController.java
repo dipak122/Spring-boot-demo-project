@@ -20,6 +20,8 @@ import java.util.Optional;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private JournalEntryService journalEntryService;
 
     public UserController() {
         System.out.println("I am in UserController constructor");
@@ -47,6 +49,18 @@ public class UserController {
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
+    @GetMapping("/{username}")
+    public ResponseEntity<?> getAllJournalEntriesOfUser(@PathVariable String username){
+        User user=userService.findByUserName(username);
+        List<JournalEntry> all=user.getJournalEntryList();
+        if(!all.isEmpty())return new ResponseEntity<>(all,HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    @PostMapping("/{username}")
+    public ResponseEntity<?> createEntry(@RequestBody JournalEntry journalEntryObj,@PathVariable String username)
+    {
+        journalEntryService.saveEntry(journalEntryObj,username);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
 }

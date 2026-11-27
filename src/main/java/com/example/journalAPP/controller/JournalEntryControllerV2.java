@@ -1,13 +1,12 @@
 package com.example.journalAPP.controller;
 
 import com.example.journalAPP.Entity.JournalEntry;
+import com.example.journalAPP.Entity.User;
 import com.example.journalAPP.Service.JournalEntryService;
+import com.example.journalAPP.Service.UserService;
 import org.bson.types.ObjectId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,21 +19,32 @@ public class JournalEntryControllerV2 {
     @Autowired
     private JournalEntryService journalEntryService;
 
+    @Autowired
+    private UserService userService;
+
     public JournalEntryControllerV2(){
        System.out.println("I am in JournalEntryControllerV2 constructor");
     }
 
-    @PostMapping
-    public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry j){
-        try {
-            j.setDate(LocalDateTime.now());
-            journalEntryService.saveEntry(j);
-            return new ResponseEntity<>(j, HttpStatus.CREATED);
-        }catch(Exception e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
+    @GetMapping("/{username}")
+    public ResponseEntity<?> getAllJournalEntriesOfUser(@PathVariable String username){
+        User user=userService.findByUserName(username);
+        List<JournalEntry> allList=user.getJournalEntryList();
+        if(!allList.isEmpty())return new ResponseEntity<>(allList,HttpStatus.FOUND);
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+//    No longer needed because journal entry will be dependent on user
+//    @PostMapping
+//    public ResponseEntity<JournalEntry> createJournalEntry(@RequestBody JournalEntry j){
+//        try {
+//            j.setDate(LocalDateTime.now());
+//            journalEntryService.saveJournalEntry(j);
+//            return new ResponseEntity<>(j, HttpStatus.CREATED);
+//        }catch(Exception e){
+//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+//        }
+//
+//    }
     @GetMapping
     public ResponseEntity<List<JournalEntry>> getALL(){
         if(journalEntryService.getAll().isEmpty()){
@@ -63,15 +73,23 @@ public class JournalEntryControllerV2 {
         }
     }
 
-    @DeleteMapping("/id/{myid}")
-    public ResponseEntity<Optional<JournalEntry>>  deleteJournalEntry(@PathVariable ObjectId myid) {
-        Optional<JournalEntry> journalEntry = journalEntryService.getById(myid);
-        if (journalEntry.isPresent()) {
-            journalEntryService.deleteById(myid);
-            return new ResponseEntity<>(journalEntry, HttpStatus.ACCEPTED);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+//    This is not valid as journal entries is depended on user
+//    @DeleteMapping("/id/{myid}")
+//    public ResponseEntity<Optional<JournalEntry>>  deleteJournalEntry(@PathVariable ObjectId myid) {
+//        Optional<JournalEntry> journalEntry = journalEntryService.getById(myid);
+//        if (journalEntry.isPresent()) {
+//            journalEntryService.deleteById(myid);
+//            return new ResponseEntity<>(journalEntry, HttpStatus.ACCEPTED);
+//        } else {
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        }
+//    }
+
+    @DeleteMapping("/id/{username}/{myid}")
+    public ResponseEntity<Optional<JournalEntry>>  deleteJournalEntryById(@PathVariable ObjectId myid,@PathVariable String username) {
+      journalEntryService.deleteById(myid,username);
+            return new ResponseEntity<>(HttpStatus.OK);
+
     }
 
     @PutMapping("/id/{id}")
